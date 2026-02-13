@@ -316,7 +316,7 @@
 <body>
 
 <div class="video-container">
-    <video class="video-player" autoplay muted loop playsinline>
+    <video class="video-player" autoplay loop playsinline>
         <source src="https://i.imgur.com/TMWRN54.mp4" type="video/mp4">
         Your browser doesn't support HTML5 video.
     </video>
@@ -328,7 +328,7 @@
                 <path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93l-1.41 1.41C19.1 7.79 20 9.79 20 12c0 2.21-0.9 4.21-2.34 5.66l1.41 1.41C20.88 17.26 22 14.76 22 12c0-2.76-1.12-5.26-2.93-7.07z"/>
                 <path d="M15.5 8.5c.84.84 1.5 2.07 1.5 3.5 0 1.43-.66 2.66-1.5 3.5l1.41 1.41C18.13 15.7 19 13.91 19 12c0-1.91-.87-3.7-2.09-4.91L15.5 8.5z"/>
             </svg>
-            <span class="sound-text">Unmute</span>
+            <span class="sound-text">Mute</span>
         </button>
 
         <!-- Dynamic volume pill -->
@@ -430,6 +430,17 @@
     let lastVol = 50;
     videoPlayer.volume = 0.5;
     volRange.style.setProperty('--vol', '50%');
+
+    // Try to autoplay with sound; browsers may block it, so fall back to muted
+    videoPlayer.play().catch(() => {
+        videoPlayer.muted = true;
+        soundText.textContent = 'Unmute';
+        volRange.value = 0;
+        volRange.style.setProperty('--vol', '0%');
+        volLabel.textContent = '0%';
+        updateVolIcon(0, true);
+        videoPlayer.play();
+    });
     volRange.addEventListener('change', () => {
         const val = parseInt(volRange.value, 10);
         if (val > 0) lastVol = val;
