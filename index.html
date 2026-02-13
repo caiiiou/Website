@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+i<!DOCTYPE html>
 <html>
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -459,7 +459,12 @@
 
     // track last non-zero volume so unmuting restores it
     let lastVol = 50;
+
+    // Initialize UI immediately so it shows 50% from the start
+    volRange.value = 50;
     volRange.style.setProperty('--vol', '50%');
+    volLabel.textContent = '50%';
+    updateVolIcon(50, false);
 
     volRange.addEventListener('change', () => {
         const val = parseInt(volRange.value, 10);
