@@ -3,6 +3,7 @@
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <link rel="icon" href="favicon.png" type="image/png">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         * {
             margin: 0;
@@ -316,10 +317,7 @@
 <body>
 
 <div class="video-container">
-    <video class="video-player" autoplay loop playsinline>
-        <source src="https://i.imgur.com/TMWRN54.mp4" type="video/mp4">
-        Your browser doesn't support HTML5 video.
-    </video>
+    <video class="video-player" id="video" autoplay loop playsinline></video>
 
     <div class="controls-overlay">
         <!-- Mute/unmute toggle -->
@@ -368,6 +366,18 @@
     const volRange     = document.getElementById('volRange');
     const volLabel     = document.getElementById('volLabel');
     const volPath      = document.getElementById('volPath');
+
+    /* ── HLS setup ── */
+    const HLS_SRC = 'https://customer-wxf40czte8oaq6i5.cloudflarestream.com/93cf7378d3c3aa6c112236f8510467b9/manifest/video.m3u8';
+
+    if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(HLS_SRC);
+        hls.attachMedia(videoPlayer);
+    } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+        // Safari has native HLS support
+        videoPlayer.src = HLS_SRC;
+    }
 
     /* ── SVG paths for volume states ── */
     const VOL_PATHS = {
