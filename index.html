@@ -370,13 +370,34 @@
     /* ── HLS setup ── */
     const HLS_SRC = 'https://customer-wxf40czte8oaq6i5.cloudflarestream.com/93cf7378d3c3aa6c112236f8510467b9/manifest/video.m3u8';
 
+    function startPlayback() {
+        videoPlayer.volume = 0.5;
+        videoPlayer.muted = false;
+        videoPlayer.play().catch(() => {
+            // Browser blocked unmuted autoplay — start muted instead
+            videoPlayer.muted = true;
+            soundText.textContent = 'Unmute';
+            volRange.value = 0;
+            volRange.style.setProperty('--vol', '0%');
+            volLabel.textContent = '0%';
+            updateVolIcon(0, true);
+            videoPlayer.play();
+        });
+    }
+
     if (Hls.isSupported()) {
-        const hls = new Hls();
+        const hls = new Hls({ startLevel: -1, capLevelToPlayerSize: false });
         hls.loadSource(HLS_SRC);
         hls.attachMedia(videoPlayer);
+        hls.on(Hls.Events.MANIFEST_PARSED, function(event, data) {
+            hls.currentLevel = hls.levels.length - 1; // force highest quality
+            hls.loadLevel = hls.levels.length - 1;    // lock it, no ABR switching
+            startPlayback();
+        });
     } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
         // Safari has native HLS support
         videoPlayer.src = HLS_SRC;
+        videoPlayer.addEventListener('loadedmetadata', startPlayback);
     }
 
     /* ── SVG paths for volume states ── */
@@ -438,19 +459,8 @@
 
     // track last non-zero volume so unmuting restores it
     let lastVol = 50;
-    videoPlayer.volume = 0.5;
     volRange.style.setProperty('--vol', '50%');
 
-    // Try to autoplay with sound; browsers may block it, so fall back to muted
-    videoPlayer.play().catch(() => {
-        videoPlayer.muted = true;
-        soundText.textContent = 'Unmute';
-        volRange.value = 0;
-        volRange.style.setProperty('--vol', '0%');
-        volLabel.textContent = '0%';
-        updateVolIcon(0, true);
-        videoPlayer.play();
-    });
     volRange.addEventListener('change', () => {
         const val = parseInt(volRange.value, 10);
         if (val > 0) lastVol = val;
