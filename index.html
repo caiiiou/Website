@@ -344,10 +344,10 @@
                     class="volume-range"
                     id="volRange"
                     type="range"
-                    min="0" max="100" value="100"
+                    min="0" max="100" value="50"
                     aria-label="Volume"
                 >
-                <span class="volume-label" id="volLabel">100%</span>
+                <span class="volume-label" id="volLabel">50%</span>
             </div>
         </div>
     </div>
@@ -427,7 +427,9 @@
     }
 
     // track last non-zero volume so unmuting restores it
-    let lastVol = 100;
+    let lastVol = 50;
+    videoPlayer.volume = 0.5;
+    volRange.style.setProperty('--vol', '50%');
     volRange.addEventListener('change', () => {
         const val = parseInt(volRange.value, 10);
         if (val > 0) lastVol = val;
