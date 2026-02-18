@@ -3,6 +3,7 @@
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <link rel="icon" href="favicon.png" type="image/png">
+    <title>caiiiou.com</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -205,27 +206,22 @@
         .drive-button {
             width: 100px;
             height: 100px;
-            background: rgba(255, 255, 255, 0.90);
+            background: transparent;
             border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08), inset 0 -2px 5px rgba(0,0,0,0.1);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.3);
+            border: none;
         }
 
         .drive-button:hover {
             transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 7px 14px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.1), inset 0 -3px 7px rgba(0,0,0,0.1);
-            background: rgba(255,255,255,0.95);
         }
 
         .drive-button:active {
             transform: translateY(1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1), inset 0 2px 3px rgba(0,0,0,0.1);
         }
 
         .drive-icon {
@@ -332,6 +328,14 @@
 
     /* ── On load: UI shows 50%, video starts muted (browser requires this for autoplay) ── */
     setVolume(50, true);
+
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: 'caiiiou.com',
+            artist: '',
+            album: ''
+        });
+    }
 
     /* ── Mute/Unmute button ── */
     function toggleSound() {
