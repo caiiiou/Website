@@ -24,6 +24,7 @@
             width: auto;
             height: auto;
             object-fit: contain;
+            cursor: pointer;
         }
 
         /* ── Controls overlay ── */
@@ -62,6 +63,10 @@
             background: rgba(0, 0, 0, 0.9);
             border-color: white;
             transform: scale(1.05);
+        }
+
+        .sound-toggle:active {
+            transform: scale(0.98);
         }
 
         .sound-icon {
@@ -194,6 +199,59 @@
             width: 32px;
         }
 
+        /* ── Playback toggle ── */
+        .playback-toggle {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(12px) scale(0.92);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 12px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 16px;
+            letter-spacing: -0.01em;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease;
+            z-index: 10;
+        }
+
+        .video-container:hover .playback-toggle,
+        .video-container:focus-within .playback-toggle,
+        .video-container.is-paused .playback-toggle,
+        .video-container.show-playback .playback-toggle {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+
+        .playback-toggle:hover,
+        .playback-toggle:focus-visible {
+            background: rgba(0, 0, 0, 0.9);
+            border-color: white;
+            transform: translateX(-50%) translateY(0) scale(1.05);
+            outline: none;
+        }
+
+        .playback-toggle:active {
+            transform: translateX(-50%) translateY(1px) scale(0.98);
+        }
+
+        .playback-icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
         /* ── Drive button ── */
         .drive-button-container {
             width: 100%;
@@ -240,6 +298,8 @@
             .volume-pill { height: 62px; padding: 0 16px; width: 62px; }
             .volume-pill:hover, .volume-pill:focus-within { width: 250px; }
             .volume-svg { width: 30px; height: 30px; }
+            .playback-toggle { bottom: 24px; padding: 16px 32px; font-size: 18px; min-width: 170px; min-height: 64px; gap: 12px; }
+            .playback-icon { width: 36px; height: 36px; }
             .drive-button { width: 150px; height: 150px; border-radius: 20px; }
             .drive-icon { width: 120px; height: 120px; }
             .drive-button-container { padding: 32px 0; }
@@ -282,6 +342,13 @@
             </div>
         </div>
     </div>
+
+    <button class="playback-toggle" id="playbackToggle" type="button" aria-label="Pause video">
+        <svg class="playback-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path id="playbackPath" d="M6 5h4v14H6zm8 0h4v14h-4z"></path>
+        </svg>
+        <span id="playbackText">Pause</span>
+    </button>
 </div>
 
 <div class="drive-button-container">
@@ -299,6 +366,9 @@
     const volRange    = document.getElementById('volRange');
     const volLabel    = document.getElementById('volLabel');
     const volPath     = document.getElementById('volPath');
+    const playbackToggle = document.getElementById('playbackToggle');
+    const playbackText   = document.getElementById('playbackText');
+    const playbackPath   = document.getElementById('playbackPath');
 
     /* ── SVG icon paths ── */
     const VOL_PATHS = {
@@ -307,10 +377,35 @@
         high:  "M3 9v6h4l5 4V5L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"
     };
 
+    const PLAYBACK_PATHS = {
+        play: "M8 5v14l11-7z",
+        pause: "M6 5h4v14H6zm8 0h4v14h-4z"
+    };
+
     function updateVolIcon(val, muted) {
         if (muted || val === 0) volPath.setAttribute('d', VOL_PATHS.muted);
         else if (val < 50)     volPath.setAttribute('d', VOL_PATHS.low);
         else                   volPath.setAttribute('d', VOL_PATHS.high);
+    }
+
+    function updatePlaybackUI() {
+        const paused = videoPlayer.paused;
+        playbackText.textContent = paused ? 'Play' : 'Pause';
+        playbackToggle.setAttribute('aria-label', paused ? 'Play video' : 'Pause video');
+        playbackPath.setAttribute('d', paused ? PLAYBACK_PATHS.play : PLAYBACK_PATHS.pause);
+        container.classList.toggle('is-paused', paused);
+    }
+
+    async function togglePlayback() {
+        if (videoPlayer.paused) {
+            try {
+                await videoPlayer.play();
+            } catch (error) {
+                updatePlaybackUI();
+            }
+        } else {
+            videoPlayer.pause();
+        }
     }
 
     /* ── Central volume setter ── */
@@ -328,6 +423,7 @@
 
     /* ── On load: UI shows 50%, video starts muted (browser requires this for autoplay) ── */
     setVolume(50, true);
+    updatePlaybackUI();
 
     if ('mediaSession' in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
@@ -352,6 +448,11 @@
         if (val > 0) lastVol = val;
         setVolume(val, val === 0);
     });
+
+    videoPlayer.addEventListener('click', togglePlayback);
+    playbackToggle.addEventListener('click', togglePlayback);
+    videoPlayer.addEventListener('play', updatePlaybackUI);
+    videoPlayer.addEventListener('pause', updatePlaybackUI);
 
     /* ── Video sizing ── */
     function adjustVideoSize() {
@@ -381,11 +482,15 @@
     const volPill    = document.querySelector('.volume-pill');
 
     function showControls() {
+        container.classList.add('show-playback');
         controlsEl.style.opacity = '1';
         clearTimeout(hideTimeout);
         hideTimeout = setTimeout(() => {
             if (!volPill.matches(':hover') && !volPill.matches(':focus-within')) {
                 controlsEl.style.opacity = '0';
+            }
+            if (!container.matches(':hover') && !videoPlayer.paused) {
+                container.classList.remove('show-playback');
             }
         }, 4000);
     }
@@ -397,6 +502,9 @@
     volPill.addEventListener('mouseleave', showControls);
     container.addEventListener('mousemove',  showControls);
     container.addEventListener('touchstart', showControls);
+    container.addEventListener('mouseleave', () => {
+        if (!videoPlayer.paused) container.classList.remove('show-playback');
+    });
     showControls();
 </script>
 </body>
