@@ -51,12 +51,19 @@
             cursor: pointer;
             display: flex;
             align-items: center;
+            justify-content: flex-start;
             gap: 8px;
+            width: 122px;
+            overflow: hidden;
             font-family: 'Inter', sans-serif;
             font-weight: 500;
             font-size: 16px;
-            transition: all 0.3s ease;
+            transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
             letter-spacing: -0.01em;
+        }
+
+        .sound-toggle.is-muted {
+            width: 148px;
         }
 
         .sound-toggle:hover {
@@ -74,6 +81,10 @@
             height: 24px;
             fill: currentColor;
             flex-shrink: 0;
+        }
+
+        .sound-text {
+            white-space: nowrap;
         }
 
         /* ── Volume pill ── */
@@ -274,7 +285,8 @@
         @media (max-width: 768px) {
             .video-container { height: 50vh; }
             .video-player    { max-height: 50vh; }
-            .sound-toggle { padding: 16px 32px; font-size: 18px; min-width: 160px; min-height: 64px; gap: 12px; }
+            .sound-toggle { padding: 16px 32px; font-size: 18px; min-height: 64px; gap: 12px; width: 156px; }
+            .sound-toggle.is-muted { width: 194px; }
             .sound-icon { width: 36px; height: 36px; }
             .volume-pill { height: 62px; padding: 0 16px; width: 62px; }
             .volume-pill:hover, .volume-pill:focus-within { width: 250px; }
@@ -341,6 +353,7 @@
 <script>
     const videoPlayer = document.getElementById('video');
     const container   = document.querySelector('.video-container');
+    const soundToggle = document.querySelector('.sound-toggle');
     const soundText   = document.querySelector('.sound-text');
     const volRange    = document.getElementById('volRange');
     const volLabel    = document.getElementById('volLabel');
@@ -389,6 +402,8 @@
         volRange.value       = val;
         volRange.style.setProperty('--vol', val + '%');
         volLabel.textContent = val + '%';
+        soundToggle.classList.toggle('is-muted', muted);
+        soundToggle.setAttribute('aria-label', muted ? 'Unmute video' : 'Mute video');
         soundText.textContent = muted ? 'Unmute' : 'Mute';
         updateVolIcon(val, muted);
     }
