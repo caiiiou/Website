@@ -452,6 +452,24 @@
     videoPlayer.addEventListener('play', updatePlaybackUI);
     videoPlayer.addEventListener('pause', updatePlaybackUI);
 
+    document.addEventListener('keydown', (event) => {
+        if (event.code !== 'Space') return;
+
+        const activeEl = document.activeElement;
+        const isControlFocused = activeEl && (
+            activeEl.tagName === 'INPUT' ||
+            activeEl.tagName === 'BUTTON' ||
+            activeEl.tagName === 'TEXTAREA' ||
+            activeEl.tagName === 'SELECT' ||
+            activeEl.isContentEditable
+        );
+
+        if (isControlFocused) return;
+
+        event.preventDefault();
+        togglePlayback();
+    });
+
     /* ── Video sizing ── */
     function adjustVideoSize() {
         const cw = container.clientWidth, ch = container.clientHeight;
