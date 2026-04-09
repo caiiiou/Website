@@ -453,6 +453,12 @@
     let hideTimeout;
     const controlsEl = document.querySelector('.controls-overlay');
     const volPill    = document.querySelector('.volume-pill');
+    
+    function collapseVolumePill() {
+        if (volPill.contains(document.activeElement)) {
+            document.activeElement.blur();
+        }
+    }
 
     function showControls() {
         controlsEl.style.opacity = '1';
@@ -468,7 +474,10 @@
         clearTimeout(hideTimeout);
         controlsEl.style.opacity = '1';
     });
-    volPill.addEventListener('mouseleave', showControls);
+    volPill.addEventListener('mouseleave', () => {
+        collapseVolumePill();
+        showControls();
+    });
     container.addEventListener('mousemove',  showControls);
     container.addEventListener('touchstart', showControls);
     showControls();
